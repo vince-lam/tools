@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Treadmill Pace</title>
+    <style>
+        :root {
+            --primary: #00e5ff;
+            /* Cyan */
+            --secondary: #ff2a6d;
+            /* Pink */
+            --bg: #121212;
+            --panel: #1e1e1e;
+            --text: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --border: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: var(--panel);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header & Toggles */
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+        @media (min-width: 600px) {
+            header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        @media (min-width: 600px) {
+            h1 {
+                text-align: left;
+            }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            background: #2c2c2c;
+            border-radius: 20px;
+            padding: 3px;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-btn.active {
+            background-color: var(--primary);
+            color: #000;
+            box-shadow: 0 2px 10px rgba(0, 229, 255, 0.3);
+        }
+
+        .toggle-btn.active-secondary {
+            background-color: var(--secondary);
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(255, 42, 109, 0.3);
+        }
+
+        /* Calculator Sections */
+        .calculators {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 768px) {
+            .calculators.dual-mode {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .calc-box {
+            background: #252525;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .calc-box.recovery {
+            border-left-color: var(--secondary);
+            display: none;
+        }
+
+        .box-header {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        /* Inputs */
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            background: #333;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            width: 100%;
+            font-size: 1.3rem;
+            font-family: monospace;
+            text-align: center;
+            outline: none;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            border-color: var(--text-muted);
+        }
+
+        /* Range Slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #444;
+            border-radius: 4px;
+            outline: none;
+            margin-top: 15px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #252525;
+        }
+
+        /* Flip slider direction visual: not strictly needed if min=low (fast) max=high (slow) */
+
+        .calc-box.recovery input[type="range"]::-webkit-slider-thumb {
+            background: var(--secondary);
+        }
+
+        /* Reference Area */
+        .reference-area {
+            margin-top: 30px;
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+        }
+
+        .ref-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .ref-grid.dual-view {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .ref-column {
+            background: #1a1a1a;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .ref-header {
+            padding: 10px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background-color: #2c2c2c;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-fast {
+            border-top: 3px solid var(--primary);
+        }
+
+        .header-slow {
+            border-top: 3px solid var(--secondary);
+        }
+
+        .ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .ref-table th {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 10px 5px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+
+        .ref-table td {
+            padding: 8px 5px;
+            border-bottom: 1px solid #2a2a2a;
+            font-family: monospace;
+            text-align: center;
+        }
+
+        /* Alternating row colors */
+        .ref-table tr:nth-child(even) {
+            background-color: #222;
+        }
+
+        /* Highlight Logic */
+        .highlight-row-fast {
+            background-color: rgba(0, 229, 255, 0.15) !important;
+            color: var(--primary);
+            font-weight: bold;
+            border-left: 3px solid var(--primary);
+        }
+
+        .highlight-row-slow {
+            background-color: rgba(255, 42, 109, 0.15) !important;
+            color: var(--secondary);
+            font-weight: bold;
+            border-left: 3px solid var(--secondary);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Treadmill Pace</h1>
+
+            <div class="controls">
+                <div class="toggle-group">
+                    <button class="toggle-btn active" id="btn-km" onclick="setUnit('km')">KM</button>
+                    <button class="toggle-btn" id="btn-mi" onclick="setUnit('mi')">Miles</button>
+                </div>
+
+                <div class="toggle-group">
+                    <button class="toggle-btn active" id="btn-single" onclick="setMode('single')">Single</button>
+                    <button class="toggle-btn" id="btn-interval" onclick="setMode('interval')">Intervals</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="calculators" id="calc-container">
+            <div class="calc-box" id="box-fast">
+                <div class="box-header">
+                    <span id="label-fast">Run Pace</span>
+                </div>
+
+                <div class="input-group">
+                    <div class="label-row">
+                        <span>Pace</span>
+                        <span class="unit-label pace-unit">min/km</span>
+                    </div>
+                    <input type="text" id="pace-fast" inputmode="decimal" value="5:00" placeholder="mm:ss"
+                        onchange="updateFromPaceInput('fast')">
+                    <input type="range" id="slider-pace-fast" min="2.5" max="15" step="0.05" value="5.0"
+                        oninput="updateFromPaceSlider('fast')">
+                </div>
+
+                <div class="input-group">
+                    <div class="label-row">
+                        <span>Speed</span>
+                        <span class="unit-label speed-unit">km/h</span>
+                    </div>
+                    <input type="number" id="speed-fast" step="0.1" inputmode="decimal" value="12.0"
+                        oninput="updateFromSpeedInput('fast')">
+                </div>
+            </div>
+
+            <div class="calc-box recovery" id="box-slow">
+                <div class="box-header">
+                    <span>Recovery Pace</span>
+                </div>
+
+                <div class="input-group">
+                    <div class="label-row">
+                        <span>Pace</span>
+                        <span class="unit-label pace-unit">min/km</span>
+                    </div>
+                    <input type="text" id="pace-slow" inputmode="decimal" value="7:30" placeholder="mm:ss"
+                        onchange="updateFromPaceInput('slow')">
+                    <input type="range" id="slider-pace-slow" min="2.5" max="15" step="0.05" value="7.5"
+                        oninput="updateFromPaceSlider('slow')">
+                </div>
+
+                <div class="input-group">
+                    <div class="label-row">
+                        <span>Speed</span>
+                        <span class="unit-label speed-unit">km/h</span>
+                    </div>
+                    <input type="number" id="speed-slow" step="0.1" inputmode="decimal" value="8.0"
+                        oninput="updateFromSpeedInput('slow')">
+                </div>
+            </div>
+        </div>
+
+        <div class="reference-area">
+            <div class="ref-grid" id="ref-grid-container">
+
+                <div class="ref-column" id="ref-col-fast">
+                    <div class="ref-header header-fast">Interval / Run Context</div>
+                    <table class="ref-table">
+                        <thead>
+                            <tr>
+                                <th class="pace-unit">Pace</th>
+                                <th class="speed-unit">Speed</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-fast">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="ref-column hidden" id="ref-col-slow">
+                    <div class="ref-header header-slow">Recovery Context</div>
+                    <table class="ref-table">
+                        <thead>
+                            <tr>
+                                <th class="pace-unit">Pace</th>
+                                <th class="speed-unit">Speed</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-slow">
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentUnit = 'km'; // 'km' or 'mi'
+        let currentMode = 'single'; // 'single' or 'interval'
+
+        // Initialize
+        window.onload = function () {
+            updateFromSpeedInput('fast');
+            updateFromSpeedInput('slow');
+        };
+
+        // --- Toggles ---
+
+        function setUnit(unit) {
+            currentUnit = unit;
+
+            document.getElementById('btn-km').classList.toggle('active', unit === 'km');
+            document.getElementById('btn-mi').classList.toggle('active', unit === 'mi');
+
+            const speedLabels = document.querySelectorAll('.speed-unit');
+            const paceLabels = document.querySelectorAll('.pace-unit');
+
+            speedLabels.forEach(el => el.textContent = unit === 'km' ? 'km/h' : 'mph');
+            paceLabels.forEach(el => el.textContent = unit === 'km' ? 'min/km' : 'min/mi');
+
+            generateTables();
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            const calcContainer = document.getElementById('calc-container');
+            const refContainer = document.getElementById('ref-grid-container');
+            const boxSlow = document.getElementById('box-slow');
+            const refColSlow = document.getElementById('ref-col-slow');
+            const fastLabel = document.getElementById('label-fast');
+
+            document.getElementById('btn-single').classList.toggle('active', mode === 'single');
+            document.getElementById('btn-interval').classList.toggle('active', mode === 'interval');
+
+            const intervalBtn = document.getElementById('btn-interval');
+            if (mode === 'interval') {
+                intervalBtn.classList.remove('active');
+                intervalBtn.classList.add('active-secondary');
+            } else {
+                intervalBtn.classList.remove('active-secondary');
+            }
+
+            if (mode === 'interval') {
+                boxSlow.style.display = 'block';
+                refColSlow.classList.remove('hidden');
+                calcContainer.classList.add('dual-mode');
+                refContainer.classList.add('dual-view');
+                fastLabel.textContent = "Interval / Fast";
+            } else {
+                boxSlow.style.display = 'none';
+                refColSlow.classList.add('hidden');
+                calcContainer.classList.remove('dual-mode');
+                refContainer.classList.remove('dual-view');
+                fastLabel.textContent = "Run Pace";
+            }
+            generateTables();
+        }
+
+        // --- Calculation Logic ---
+
+        // 1. Driven by Slider (Slider represents decimal pace)
+        function updateFromPaceSlider(type) {
+            const slider = document.getElementById(`slider-pace-${type}`);
+            const paceVal = parseFloat(slider.value);
+
+            // Update Pace Text
+            document.getElementById(`pace-${type}`).value = formatPace(paceVal);
+
+            // Calc Speed (Speed = 60 / Pace)
+            const speed = 60 / paceVal;
+
+            // Update Speed Input
+            document.getElementById(`speed-${type}`).value = speed.toFixed(1);
+
+            generateTables();
+        }
+
+        // 2. Driven by Speed Input (User types speed)
+        function updateFromSpeedInput(type) {
+            const speedInput = document.getElementById(`speed-${type}`);
+            let speed = parseFloat(speedInput.value);
+
+            if (isNaN(speed) || speed <= 0) return;
+
+            // Calc Pace
+            const paceDecimal = 60 / speed;
+
+            // Update Pace Text
+            document.getElementById(`pace-${type}`).value = formatPace(paceDecimal);
+
+            // Update Slider (Syncs slider position to calculated pace)
+            const slider = document.getElementById(`slider-pace-${type}`);
+            slider.value = paceDecimal;
+
+            generateTables();
+        }
+
+        // 3. Driven by Pace Text Input (User types 5:30)
+        function updateFromPaceInput(type) {
+            const paceInput = document.getElementById(`pace-${type}`);
+            let val = paceInput.value.trim();
+            let decimalPace = parsePace(val);
+
+            if (!decimalPace || decimalPace <= 0) return;
+
+            // Update Slider
+            const slider = document.getElementById(`slider-pace-${type}`);
+            slider.value = decimalPace;
+
+            // Calc Speed
+            const speed = 60 / decimalPace;
+            document.getElementById(`speed-${type}`).value = speed.toFixed(1);
+
+            generateTables();
+        }
+
+        // --- Helpers ---
+
+        function formatPace(decimalMinutes) {
+            const minutes = Math.floor(decimalMinutes);
+            const seconds = Math.round((decimalMinutes - minutes) * 60);
+            if (seconds === 60) {
+                return `${minutes + 1}:00`;
+            }
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function parsePace(paceString) {
+            if (paceString.includes(':')) {
+                const parts = paceString.split(':');
+                const min = parseInt(parts[0]);
+                const sec = parseInt(parts[1]);
+                return min + (sec / 60);
+            } else {
+                return parseFloat(paceString);
+            }
+        }
+
+        // --- Table Generation ---
+
+        function generateTables() {
+            const speedFast = parseFloat(document.getElementById('speed-fast').value) || 12;
+            fillTable('tbody-fast', speedFast, 'highlight-row-fast');
+
+            if (currentMode === 'interval') {
+                const speedSlow = parseFloat(document.getElementById('speed-slow').value) || 8;
+                fillTable('tbody-slow', speedSlow, 'highlight-row-slow');
+            }
+        }
+
+        function fillTable(tbodyId, centerSpeed, highlightClass) {
+            const tbody = document.getElementById(tbodyId);
+            tbody.innerHTML = '';
+
+            // Requirement: 5 rows above, 5 rows below.
+            // We calculate based on Speed Increments (0.1) as that is how treadmills work.
+            // Array of offsets relative to center: +0.5 ... 0 ... -0.5
+
+            const offsets = [0.5, 0.4, 0.3, 0.2, 0.1, 0, -0.1, -0.2, -0.3, -0.4, -0.5];
+
+            offsets.forEach(offset => {
+                const s = centerSpeed + offset;
+
+                // Skip invalid speeds (e.g. negative)
+                if (s <= 0) return;
+
+                const pace = formatPace(60 / s);
+                const tr = document.createElement('tr');
+
+                // Exact match highlight (using small epsilon for float comparison)
+                if (Math.abs(offset) < 0.05) {
+                    tr.classList.add(highlightClass);
+                }
+
+                tr.innerHTML = `
+                <td><strong>${pace}</strong></td>
+                <td>${s.toFixed(1)}</td>
+            `;
+                tbody.appendChild(tr);
+            });
+        }
+
+    </script>
+</body>
+
+</html>
