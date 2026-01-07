@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to LLM Format Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 500px;
+        }
+
+        .panel {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-left {
+            border-right: 2px solid #e5e7eb;
+        }
+
+        .panel h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        #inputArea {
+            flex: 1;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #inputArea:focus {
+            border-color: #667eea;
+        }
+
+        #outputArea {
+            flex: 1;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            background: #f9fafb;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-convert {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-convert:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-copy {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-copy:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-clear {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 968px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .panel-left {
+                border-right: none;
+                border-bottom: 2px solid #e5e7eb;
+            }
+        }
+
+        .example-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 10px;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 Text to LLM Format Converter</h1>
+            <p>Paste your formatted text and convert it to LLM-readable markdown format</p>
+        </div>
+
+        <div class="content">
+            <div class="panel panel-left">
+                <h2>
+                    <svg class="panel-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                        </path>
+                    </svg>
+                    Input (Paste Formatted Text)
+                </h2>
+                <div contenteditable="true" id="inputArea"></div>
+                <p class="example-text">💡 Tip: Paste text directly from Google Docs, Word, or any formatted source</p>
+                <div class="button-group">
+                    <button class="btn-convert" onclick="convertText()">Convert →</button>
+                    <button class="btn-clear" onclick="clearAll()">Clear All</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>
+                    <svg class="panel-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                        </path>
+                    </svg>
+                    Output (LLM-Readable Format)
+                </h2>
+                <div id="outputArea"></div>
+                <div class="button-group">
+                    <button class="btn-copy" onclick="copyOutput()">📋 Copy to Clipboard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">Copied to clipboard!</div>
+
+    <script>
+        function convertText() {
+            const inputArea = document.getElementById('inputArea');
+            const outputArea = document.getElementById('outputArea');
+
+            // Clone the input to process it
+            const clone = inputArea.cloneNode(true);
+
+            // Process the HTML structure
+            let result = processNode(clone);
+
+            // Clean up excessive newlines (more than 2 consecutive)
+            result = result.replace(/\n{3,}/g, '\n\n');
+
+            // Trim the result
+            result = result.trim();
+
+            outputArea.textContent = result;
+        }
+
+        function processNode(node) {
+            let text = '';
+
+            for (let child of node.childNodes) {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    // Add text content
+                    text += child.textContent;
+                } else if (child.nodeType === Node.ELEMENT_NODE) {
+                    const tagName = child.tagName.toLowerCase();
+                    const computedStyle = window.getComputedStyle(child);
+                    const fontSize = parseFloat(computedStyle.fontSize);
+                    const fontWeight = computedStyle.fontWeight;
+
+                    // Handle headings based on font size and weight
+                    if (tagName === 'h1' || (fontSize >= 24 && fontWeight >= 600)) {
+                        text += '\n\n# ' + getTextContent(child) + '\n\n';
+                    } else if (tagName === 'h2' || (fontSize >= 20 && fontWeight >= 600)) {
+                        text += '\n\n## ' + getTextContent(child) + '\n\n';
+                    } else if (tagName === 'h3' || (fontSize >= 18 && fontWeight >= 600)) {
+                        text += '\n\n### ' + getTextContent(child) + '\n\n';
+                    } else if (tagName === 'h4' || (fontSize >= 16 && fontWeight >= 600)) {
+                        text += '\n\n#### ' + getTextContent(child) + '\n\n';
+                    } else if (tagName === 'h5') {
+                        text += '\n\n##### ' + getTextContent(child) + '\n\n';
+                    } else if (tagName === 'h6') {
+                        text += '\n\n###### ' + getTextContent(child) + '\n\n';
+                    }
+                    // Handle paragraphs and divs
+                    else if (tagName === 'p' || tagName === 'div') {
+                        const innerText = processNode(child);
+                        if (innerText.trim()) {
+                            text += innerText + '\n\n';
+                        }
+                    }
+                    // Handle line breaks
+                    else if (tagName === 'br') {
+                        text += '\n';
+                    }
+                    // Handle bold text
+                    else if (tagName === 'b' || tagName === 'strong' || fontWeight >= 600) {
+                        text += '**' + getTextContent(child) + '**';
+                    }
+                    // Handle italic text
+                    else if (tagName === 'i' || tagName === 'em') {
+                        text += '*' + getTextContent(child) + '*';
+                    }
+                    // Handle underlined text
+                    else if (tagName === 'u') {
+                        text += '__' + getTextContent(child) + '__';
+                    }
+                    // Handle lists
+                    else if (tagName === 'ul' || tagName === 'ol') {
+                        text += '\n' + processList(child, tagName === 'ol') + '\n';
+                    }
+                    // Handle list items
+                    else if (tagName === 'li') {
+                        text += processNode(child);
+                    }
+                    // Handle code blocks
+                    else if (tagName === 'pre' || tagName === 'code') {
+                        text += '`' + getTextContent(child) + '`';
+                    }
+                    // Handle blockquotes
+                    else if (tagName === 'blockquote') {
+                        const lines = getTextContent(child).split('\n');
+                        text += '\n' + lines.map(line => '> ' + line).join('\n') + '\n\n';
+                    }
+                    // Default: recurse into children
+                    else {
+                        text += processNode(child);
+                    }
+                }
+            }
+
+            return text;
+        }
+
+        function processList(listNode, isOrdered) {
+            let result = '';
+            let index = 1;
+
+            for (let child of listNode.children) {
+                if (child.tagName.toLowerCase() === 'li') {
+                    const prefix = isOrdered ? `${index}. ` : '- ';
+                    result += prefix + getTextContent(child).trim() + '\n';
+                    index++;
+                }
+            }
+
+            return result;
+        }
+
+        function getTextContent(node) {
+            let text = '';
+
+            for (let child of node.childNodes) {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    text += child.textContent;
+                } else if (child.nodeType === Node.ELEMENT_NODE) {
+                    const tagName = child.tagName.toLowerCase();
+                    const computedStyle = window.getComputedStyle(child);
+                    const fontWeight = computedStyle.fontWeight;
+
+                    if (tagName === 'b' || tagName === 'strong' || fontWeight >= 600) {
+                        text += '**' + getTextContent(child) + '**';
+                    } else if (tagName === 'i' || tagName === 'em') {
+                        text += '*' + getTextContent(child) + '*';
+                    } else if (tagName === 'u') {
+                        text += '__' + getTextContent(child) + '__';
+                    } else if (tagName === 'br') {
+                        text += '\n';
+                    } else {
+                        text += getTextContent(child);
+                    }
+                }
+            }
+
+            return text;
+        }
+
+        function copyOutput() {
+            const outputArea = document.getElementById('outputArea');
+            const text = outputArea.textContent;
+
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification();
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('inputArea').innerHTML = '';
+            document.getElementById('outputArea').textContent = '';
+        }
+
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+
+        // Auto-convert on input
+        document.getElementById('inputArea').addEventListener('input', () => {
+            convertText();
+        });
+
+        // Also convert on paste
+        document.getElementById('inputArea').addEventListener('paste', () => {
+            setTimeout(convertText, 10);
+        });
+    </script>
+</body>
+
+</html>
