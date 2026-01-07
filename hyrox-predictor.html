@@ -185,6 +185,13 @@
             font-weight: bold;
         }
 
+        .breakdown-item .percentage {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 4px;
+            font-weight: normal;
+        }
+
         @media (max-width: 900px) {
             .main-grid {
                 grid-template-columns: 1fr;
@@ -379,15 +386,24 @@
                 <div class="breakdown">
                     <div class="breakdown-item">
                         <div class="label">Running</div>
-                        <div class="value" id="runTotal">40:00</div>
+                        <div>
+                            <div class="value" id="runTotal">40:00</div>
+                            <div class="percentage" id="runPercent">53.3%</div>
+                        </div>
                     </div>
                     <div class="breakdown-item">
                         <div class="label">Stations</div>
-                        <div class="value" id="stationTotal">26:00</div>
+                        <div>
+                            <div class="value" id="stationTotal">26:00</div>
+                            <div class="percentage" id="stationPercent">34.7%</div>
+                        </div>
                     </div>
                     <div class="breakdown-item">
                         <div class="label">Roxzone</div>
-                        <div class="value" id="roxTotal">8:00</div>
+                        <div>
+                            <div class="value" id="roxTotal">8:00</div>
+                            <div class="percentage" id="roxPercent">10.7%</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -403,9 +419,14 @@
     </div>
 
     <script>
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
+        function formatTime(seconds, forceHours = false) {
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
             const secs = Math.floor(seconds % 60);
+
+            if (hours > 0 || forceHours) {
+                return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
             return `${mins}:${secs.toString().padStart(2, '0')}`;
         }
 
@@ -457,10 +478,20 @@
             const totalRunTime = runTime * 8;
             const totalTime = totalRunTime + stationTime + roxTime;
 
-            document.getElementById('totalTime').textContent = formatTime(totalTime);
-            document.getElementById('runTotal').textContent = formatTime(totalRunTime);
-            document.getElementById('stationTotal').textContent = formatTime(stationTime);
-            document.getElementById('roxTotal').textContent = formatTime(roxTime);
+            // Format each component based on its own duration
+            document.getElementById('totalTime').textContent = formatTime(totalTime, totalTime >= 3600);
+            document.getElementById('runTotal').textContent = formatTime(totalRunTime, totalRunTime >= 3600);
+            document.getElementById('stationTotal').textContent = formatTime(stationTime, stationTime >= 3600);
+            document.getElementById('roxTotal').textContent = formatTime(roxTime, roxTime >= 3600);
+
+            // Calculate and display percentages
+            const runPercent = ((totalRunTime / totalTime) * 100).toFixed(1);
+            const stationPercent = ((stationTime / totalTime) * 100).toFixed(1);
+            const roxPercent = ((roxTime / totalTime) * 100).toFixed(1);
+
+            document.getElementById('runPercent').textContent = `${runPercent}%`;
+            document.getElementById('stationPercent').textContent = `${stationPercent}%`;
+            document.getElementById('roxPercent').textContent = `${roxPercent}%`;
         }
 
         document.getElementById('jsonInput').value = '{"avgRun": 300, "roxzone": 480, "stations": [240, 90, 90, 300, 240, 120, 240, 300]}';
