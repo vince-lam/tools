@@ -27,10 +27,47 @@
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
-            padding: 15px;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .top-nav {
+            background: rgba(30, 30, 30, 0.95);
+            border-bottom: 1px solid var(--border);
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .top-nav a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .top-nav a:hover {
+            color: var(--secondary);
+        }
+
+        .top-nav a:first-child {
+            color: var(--text);
+        }
+
+        .top-nav a:first-child:hover {
+            color: var(--primary);
+        }
+
+        .main-wrapper {
+            flex: 1;
             display: flex;
             justify-content: center;
-            min-height: 100vh;
+            padding: 15px;
         }
 
         .container {
@@ -300,7 +337,11 @@
 </head>
 
 <body>
-
+    <nav class="top-nav">
+        <a href="https://tools.vinlam.com">← More Tools</a>
+        <a href="https://vinlam.com/posts/run-clubs-in-sg/">Singapore Run Clubs</a>
+    </nav>
+    <div class="main-wrapper">
     <div class="container">
         <header>
             <h1>Treadmill Pace</h1>
@@ -595,6 +636,7 @@
         }
 
     </script>
+    </div>
 </body>
 
 </html>
