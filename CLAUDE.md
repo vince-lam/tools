@@ -22,6 +22,7 @@ This is a static website repository that hosts a collection of web-based utility
 - Rounded containers with box shadows
 - Responsive layouts using CSS Grid and Flexbox
 - Mobile-first design with media queries
+- Favicon from vinlam.com (`<link rel="icon" type="image/svg+xml" href="/favicon.svg">`)
 
 **Navigation**: The index page includes a header with navigation to the main vinlam.com site, featuring a responsive hamburger menu for mobile views. The navigation structure assumes this is part of a larger vinlam.com ecosystem.
 
@@ -50,20 +51,24 @@ When adding a new tool:
 1. Create a new HTML file in the root directory (e.g., `my-tool.html`)
 2. Follow the existing single-file architecture pattern
 3. Use the established design system (gradients, colors, responsive patterns)
-4. **Include the top navigation bar** - All tools must have a thin navigation bar at the top:
+4. **Include the favicon link** in the HTML head:
+   ```html
+   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+   ```
+5. **Include the top navigation bar** - All tools must have a thin navigation bar at the top:
    - Include "← More Tools" link that points to `https://tools.vinlam.com`
    - For running-related tools, also include "Singapore Run Clubs" link to `https://vinlam.com/posts/run-clubs-in-sg/`
    - Style the nav bar to match the tool's theme (light or dark)
    - See [hyrox-predictor.html](hyrox-predictor.html:24-60) or [treadmill-pace.html](treadmill-pace.html:36-71) for implementation examples
-5. Add an entry to the tool list in `index.html`:
+6. Add an entry to the tool list in `index.html`:
    ```html
    <li>
        <a href="/my-tool">Tool Name</a>
        <p class="description">Brief description of what the tool does.</p>
    </li>
    ```
-6. Test locally before committing
-7. Push to main branch to deploy
+7. Test locally before committing
+8. Push to main branch to deploy
 
 ## Tool Implementation Patterns
 
