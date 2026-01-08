@@ -322,16 +322,25 @@
         .tool-list {
             list-style: none;
             padding: 0;
+            display: grid;
+            gap: 2rem;
         }
 
         .tool-list li {
-            margin: 15px 0;
+            margin: 0;
+        }
+
+        .tool-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
         }
 
         .tool-list a {
             color: rgb(17, 88, 209);
             text-decoration: none;
             font-size: 18px;
+            font-weight: 600;
         }
 
         .tool-list a:hover {
@@ -341,8 +350,22 @@
         .description {
             color: rgb(102, 102, 102);
             font-size: 14px;
-            margin-top: 0.25rem;
-            margin-left: 0;
+            margin: 0;
+        }
+
+        .tool-screenshot {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid rgb(236, 233, 233);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .tool-screenshot:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         /* Focus outline */
@@ -414,16 +437,31 @@
 
         <ul class="tool-list">
             <li>
-                <a href="/hyrox-predictor">Hyrox Race Predictor</a>
-                <p class="description">Calculate your target Hyrox race time.</p>
+                <div class="tool-item">
+                    <a href="/hyrox-predictor">Hyrox Race Predictor</a>
+                    <p class="description">Calculate your target Hyrox race time.</p>
+                    <a href="/hyrox-predictor">
+                        <img src="/screenshots/hyrox-predictor.png" alt="Hyrox Race Predictor screenshot" class="tool-screenshot" loading="lazy">
+                    </a>
+                </div>
             </li>
             <li>
-                <a href="/text-for-llm">Convert Text for LLM</a>
-                <p class="description">Paste your formatted text and convert it to LLM-readable markdown format.</p>
+                <div class="tool-item">
+                    <a href="/text-for-llm">Convert Text for LLM</a>
+                    <p class="description">Paste your formatted text and convert it to LLM-readable markdown format.</p>
+                    <a href="/text-for-llm">
+                        <img src="/screenshots/text-for-llm.png" alt="Text to LLM Format Converter screenshot" class="tool-screenshot" loading="lazy">
+                    </a>
+                </div>
             </li>
             <li>
-                <a href="/treadmill-pace">Treadmill Pace to Speed Converter</a>
-                <p class="description">Convert your running pace to speed for interval treadmill sessions.</p>
+                <div class="tool-item">
+                    <a href="/treadmill-pace">Treadmill Pace to Speed Converter</a>
+                    <p class="description">Convert your running pace to speed for interval treadmill sessions.</p>
+                    <a href="/treadmill-pace">
+                        <img src="/screenshots/treadmill-pace.png" alt="Treadmill Pace to Speed Converter screenshot" class="tool-screenshot" loading="lazy">
+                    </a>
+                </div>
             </li>
             <!-- Add more tools here as you create them -->
         </ul>
