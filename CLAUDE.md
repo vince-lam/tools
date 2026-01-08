@@ -50,17 +50,49 @@ When adding a new tool:
 1. Create a new HTML file in the root directory (e.g., `my-tool.html`)
 2. Follow the existing single-file architecture pattern
 3. Use the established design system (gradients, colors, responsive patterns)
-4. Add an entry to the tool list in `index.html`:
+4. **Include the top navigation bar** - All tools must have a thin navigation bar at the top:
+   - Include "← More Tools" link that points to `https://tools.vinlam.com`
+   - For running-related tools, also include "Singapore Run Clubs" link to `https://vinlam.com/posts/run-clubs-in-sg/`
+   - Style the nav bar to match the tool's theme (light or dark)
+   - See [hyrox-predictor.html](hyrox-predictor.html:24-60) or [treadmill-pace.html](treadmill-pace.html:36-71) for implementation examples
+5. Add an entry to the tool list in `index.html`:
    ```html
    <li>
        <a href="/my-tool">Tool Name</a>
        <p class="description">Brief description of what the tool does.</p>
    </li>
    ```
-5. Test locally before committing
-6. Push to main branch to deploy
+6. Test locally before committing
+7. Push to main branch to deploy
 
 ## Tool Implementation Patterns
+
+**Navigation Bar Structure**: All tools must include a top navigation bar:
+
+```css
+.top-nav {
+    background: rgba(255, 255, 255, 0.95); /* or dark: rgba(30, 30, 30, 0.95) */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 8px 15px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+```
+
+```html
+<body>
+    <nav class="top-nav">
+        <a href="https://tools.vinlam.com">← More Tools</a>
+        <!-- For running tools, add: -->
+        <a href="https://vinlam.com/posts/run-clubs-in-sg/">Singapore Run Clubs</a>
+    </nav>
+    <div class="main-wrapper">
+        <!-- Tool content -->
+    </div>
+</body>
+```
 
 **State Management**: Tools use plain JavaScript with DOM manipulation. Common patterns:
 - Range sliders synced with text inputs
