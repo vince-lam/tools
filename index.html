@@ -320,6 +320,42 @@
             margin-bottom: 1.5rem;
         }
 
+        /* Sorting Controls */
+        .sorting-controls {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .sort-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid rgb(17, 88, 209);
+            background: white;
+            color: rgb(17, 88, 209);
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        .sort-btn:hover {
+            background: rgb(17, 88, 209);
+            color: white;
+        }
+
+        .sort-btn.active {
+            background: rgb(17, 88, 209);
+            color: white;
+        }
+
+        .sort-btn:focus-visible {
+            outline: 2px dashed rgb(40, 39, 40);
+            outline-offset: 0.25rem;
+        }
+
         .tool-list {
             list-style: none;
             padding: 0;
@@ -329,12 +365,48 @@
 
         .tool-list li {
             margin: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .tool-list li.fade-out {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        /* Category Headings */
+        .category-heading {
+            margin-top: 1rem;
+        }
+
+        .category-heading:first-child {
+            margin-top: 0;
+        }
+
+        .category-heading h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: rgb(102, 102, 102);
+            border-bottom: 1px solid rgb(236, 233, 233);
+            padding-bottom: 0.5rem;
+            margin-bottom: 0;
+        }
+
+        .category-heading.hidden {
+            display: none;
         }
 
         .tool-item {
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
+        }
+
+        .tool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
         .tool-list a {
@@ -346,6 +418,13 @@
 
         .tool-list a:hover {
             text-decoration: underline;
+        }
+
+        .tool-date {
+            font-size: 13px;
+            color: rgb(153, 153, 153);
+            font-weight: 400;
+            white-space: nowrap;
         }
 
         .description {
@@ -435,28 +514,48 @@
         <h1>Tools</h1>
         <p>A collection of quickly vibe coded web-based tools to solve my commonly faced problems.</p>
 
+        <div class="sorting-controls">
+            <button id="sort-category" class="sort-btn active">Sort by Category</button>
+            <button id="sort-date" class="sort-btn">Sort by Date</button>
+        </div>
+
         <ul class="tool-list">
-            <li>
+            <li class="category-heading" data-category="fitness">
+                <h2>Fitness</h2>
+            </li>
+            <li data-category="fitness" data-date="2026-01-07" data-name="hyrox-predictor">
                 <div class="tool-item">
-                    <a href="/hyrox-predictor">Hyrox Race Predictor</a>
+                    <div class="tool-header">
+                        <a href="/hyrox-predictor">Hyrox Race Predictor</a>
+                        <span class="tool-date">7 Jan 2026</span>
+                    </div>
                     <p class="description">Calculate your target Hyrox race time.</p>
                     <a href="/hyrox-predictor">
                         <img src="/screenshots/hyrox-predictor.png" alt="Hyrox Race Predictor screenshot" class="tool-screenshot" loading="lazy">
                     </a>
                 </div>
             </li>
-            <li>
+            <li data-category="fitness" data-date="2026-01-07" data-name="treadmill-pace">
                 <div class="tool-item">
-                    <a href="/treadmill-pace">Treadmill Pace to Speed Converter</a>
+                    <div class="tool-header">
+                        <a href="/treadmill-pace">Treadmill Pace to Speed Converter</a>
+                        <span class="tool-date">7 Jan 2026</span>
+                    </div>
                     <p class="description">Convert your running pace to speed for interval treadmill sessions.</p>
                     <a href="/treadmill-pace">
                         <img src="/screenshots/treadmill-pace.png" alt="Treadmill Pace to Speed Converter screenshot" class="tool-screenshot" loading="lazy">
                     </a>
                 </div>
             </li>
-            <li>
+            <li class="category-heading" data-category="productivity">
+                <h2>Productivity</h2>
+            </li>
+            <li data-category="productivity" data-date="2026-01-07" data-name="text-for-llm">
                 <div class="tool-item">
-                    <a href="/text-for-llm">Convert Text for LLM</a>
+                    <div class="tool-header">
+                        <a href="/text-for-llm">Convert Text for LLM</a>
+                        <span class="tool-date">7 Jan 2026</span>
+                    </div>
                     <p class="description">Paste your formatted text and convert it to LLM-readable markdown format.</p>
                     <a href="/text-for-llm">
                         <img src="/screenshots/text-for-llm.png" alt="Text to LLM Format Converter screenshot" class="tool-screenshot" loading="lazy">
@@ -487,7 +586,102 @@
             }
         }
 
+        function initToolSorting() {
+            const toolList = document.querySelector('.tool-list');
+            const sortCategoryBtn = document.getElementById('sort-category');
+            const sortDateBtn = document.getElementById('sort-date');
+
+            if (!toolList || !sortCategoryBtn || !sortDateBtn) return;
+
+            // Store initial state - capture headings and items once at the start
+            const allToolItems = Array.from(toolList.querySelectorAll('li:not(.category-heading)'));
+            const allCategoryHeadings = Array.from(toolList.querySelectorAll('li.category-heading'));
+
+            // Sort by category (group by category, then by date within each category)
+            function sortByCategory() {
+                // Get current items from DOM
+                const currentItems = Array.from(toolList.querySelectorAll('li:not(.category-heading)'));
+                const currentHeadings = Array.from(toolList.querySelectorAll('li.category-heading'));
+
+                // Fade out current items
+                currentItems.forEach(item => item.classList.add('fade-out'));
+                currentHeadings.forEach(heading => heading.classList.add('fade-out'));
+
+                setTimeout(() => {
+                    // Clear the list
+                    toolList.innerHTML = '';
+
+                    // Group items by category
+                    const categoryOrder = ['fitness', 'productivity'];
+
+                    categoryOrder.forEach(category => {
+                        // Add category heading (use stored headings)
+                        const heading = allCategoryHeadings.find(h => h.dataset.category === category);
+                        if (heading) {
+                            heading.classList.remove('fade-out', 'hidden');
+                            toolList.appendChild(heading);
+                        }
+
+                        // Add tools in this category, sorted by date (oldest first)
+                        const categoryItems = allToolItems
+                            .filter(item => item.dataset.category === category)
+                            .sort((a, b) => new Date(a.dataset.date) - new Date(b.dataset.date));
+
+                        categoryItems.forEach(item => {
+                            item.classList.remove('fade-out');
+                            toolList.appendChild(item);
+                        });
+                    });
+
+                    // Update button states
+                    sortCategoryBtn.classList.add('active');
+                    sortDateBtn.classList.remove('active');
+                }, 300);
+            }
+
+            // Sort by date (oldest first, no category headings)
+            function sortByDate() {
+                // Get current items from DOM
+                const currentItems = Array.from(toolList.querySelectorAll('li:not(.category-heading)'));
+                const currentHeadings = Array.from(toolList.querySelectorAll('li.category-heading'));
+
+                // Fade out
+                currentItems.forEach(item => item.classList.add('fade-out'));
+                currentHeadings.forEach(heading => heading.classList.add('fade-out'));
+
+                setTimeout(() => {
+                    // Clear the list
+                    toolList.innerHTML = '';
+
+                    // Sort all items by date (oldest first)
+                    const sortedItems = allToolItems.slice().sort((a, b) => {
+                        return new Date(a.dataset.date) - new Date(b.dataset.date);
+                    });
+
+                    // Add items without category headings
+                    sortedItems.forEach(item => {
+                        item.classList.remove('fade-out');
+                        toolList.appendChild(item);
+                    });
+
+                    // Update button states
+                    sortDateBtn.classList.add('active');
+                    sortCategoryBtn.classList.remove('active');
+                }, 300);
+            }
+
+            // Event listeners
+            sortCategoryBtn.addEventListener('click', sortByCategory);
+            sortDateBtn.addEventListener('click', sortByDate);
+
+            // Default: sort by category on load
+            // Items are already in the correct order in HTML, just ensure buttons are correct
+            sortCategoryBtn.classList.add('active');
+            sortDateBtn.classList.remove('active');
+        }
+
         toggleNav();
+        initToolSorting();
     </script>
 </body>
 
