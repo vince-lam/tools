@@ -19,6 +19,9 @@ Calculate your target Hyrox race time based on your running pace and station est
 ### [Treadmill Pace Converter](https://tools.vinlam.com/treadmill-pace)
 Convert running pace (min/km or min/mile) to treadmill speed (km/h or mph) for interval training sessions.
 
+### [Heart Rate Zone Calculator](https://tools.vinlam.com/hr-zone-calculator)
+Compare different heart rate zone calculation methods to see how Apple Watch, Garmin, and traditional formulas differ.
+
 ### [Text for LLM](https://tools.vinlam.com/text-for-llm)
 Convert formatted text to clean markdown format optimized for pasting into LLMs like Claude or ChatGPT.
 
